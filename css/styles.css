@@ -57,6 +57,18 @@ body::before {
   pointer-events: none;
 }
 
+/* --- 假面骑士全家福背景 --- */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  background:
+    linear-gradient(rgba(6,6,14,0.88), rgba(6,6,14,0.88)),
+    url('../img/bg-all-riders.jpg') center/cover no-repeat fixed;
+  pointer-events: none;
+}
+
 a { color: inherit; text-decoration: none; }
 button { cursor: pointer; border: none; outline: none; font-family: inherit; }
 input { font-family: inherit; outline: none; border: none; }
