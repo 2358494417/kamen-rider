@@ -57,15 +57,27 @@ body::before {
   pointer-events: none;
 }
 
-/* --- 假面骑士全家福背景 --- */
+/* --- 假面骑士漫画风背景 --- */
 body::after {
   content: '';
   position: fixed;
   inset: 0;
   z-index: -2;
   background:
-    linear-gradient(rgba(6,6,14,0.88), rgba(6,6,14,0.88)),
-    url('../img/bg-all-riders.jpg') center/cover no-repeat fixed;
+    linear-gradient(rgba(6,6,14,0.92), rgba(6,6,14,0.92)),
+    url('../img/bg-manga.jpg') center/cover no-repeat fixed;
+  filter: contrast(1.3) brightness(0.7);
+  pointer-events: none;
+}
+
+/* 漫画网点纸叠加层 */
+.manga-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  opacity: 0.05;
+  background-image: radial-gradient(circle, #fff 1px, transparent 1px);
+  background-size: 6px 6px;
   pointer-events: none;
 }
 
@@ -228,10 +240,8 @@ img { max-width: 100%; display: block; }
   margin-top: 64px;
   padding: 60px 24px 70px;
   background:
-    radial-gradient(ellipse at 20% 30%, rgba(31,199,66,0.1), transparent 55%),
-    radial-gradient(ellipse at 80% 30%, rgba(232,32,48,0.1), transparent 55%),
-    radial-gradient(ellipse at 50% 100%, rgba(255,184,0,0.05), transparent 40%),
-    var(--kr-dark-2);
+    linear-gradient(rgba(6,6,14,0.92), rgba(6,6,14,0.92)),
+    url('../img/bg_manga2.jpg') center/cover no-repeat;
   overflow: hidden;
 }
 
@@ -297,6 +307,16 @@ img { max-width: 100%; display: block; }
   justify-content: space-between;
   gap: 40px;
 }
+.banner-left::before {
+  content: '';
+  position: absolute;
+  top: -20px;
+  left: -10px;
+  width: 40px;
+  height: 40px;
+  border-left: 2px solid rgba(255,255,255,0.3);
+  border-top: 2px solid rgba(255,255,255,0.3);
+}
 
 .banner-left {
   flex: 1;
@@ -337,6 +357,9 @@ img { max-width: 100%; display: block; }
 }
 
 .banner-title {
+  text-shadow: 3px 3px 0 #000;
+  text-transform: uppercase;
+
   font-size: 2.8rem;
   font-weight: 900;
   letter-spacing: 4px;
@@ -346,6 +369,8 @@ img { max-width: 100%; display: block; }
 }
 
 .banner-title-accent {
+  text-shadow: 4px 4px 0 #000;
+
   display: block;
   background: linear-gradient(135deg, var(--kr-green-glow), var(--kr-gold), var(--kr-crimson-glow));
   -webkit-background-clip: text;
@@ -357,19 +382,20 @@ img { max-width: 100%; display: block; }
 
 .banner-subtitle {
   font-size: 0.85rem;
-  font-weight: 700;
-  letter-spacing: 5px;
-  color: var(--text-muted);
+  font-weight: 900;
+  letter-spacing: 6px;
+  color: #aaa;
   margin-bottom: 16px;
+  text-shadow: 1px 1px 0 #000;
 }
 
 .banner-belt {
   width: 80px;
-  height: 3px;
-  background: linear-gradient(90deg, var(--kr-green), var(--kr-gold), var(--kr-crimson));
-  border-radius: 2px;
+  height: 4px;
+  background: #fff;
   margin-bottom: 16px;
   opacity: 0.9;
+  box-shadow: 0 0 10px rgba(255,255,255,0.3);
 }
 
 .banner-desc {
@@ -1193,7 +1219,7 @@ img { max-width: 100%; display: block; }
   .banner-left { text-align: center; max-width: 100%; }
   .banner-right { order: -1; }
   .banner-hero-img { width: 140px; }
-  .banner-badge { font-size: 0.65rem; padding: 3px 12px; }
+  .banner-badge { font-size: 0.6rem; padding: 3px 10px; }
   .banner-title { font-size: 1.6rem; }
   .banner-title-accent { font-size: 2rem; }
   .banner-subtitle { font-size: 0.7rem; margin-bottom: 12px; }
