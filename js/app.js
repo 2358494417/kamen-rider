@@ -769,3 +769,246 @@ function initCardSparkEffects() {
     }
   });
 }
+
+// ============================================
+// 假面骑士鼠标拖拽特效 - Rider Kick Energy Trail
+// ============================================
+(function() {
+  var canvas = document.createElement('canvas');
+  canvas.id = 'krMouseCanvas';
+  canvas.style.cssText = 'position:fixed;top:0;left:0;z-index:9999;pointer-events:none;';
+  document.body.appendChild(canvas);
+  var ctx = canvas.getContext('2d');
+  
+  var W, H;
+  var mouse = { x: -100, y: -100, prevX: -100, prevY: -100, down: false };
+  var particles = [];
+  var trails = [];
+  var sparks = [];
+  
+  // Rider colors
+  var COLORS = ['#1fc742','#45ff6b','#e82030','#ff4050','#ffb800','#ffdd57','#00d4ff'];
+  
+  function resize() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+  
+  // Track mouse
+  document.addEventListener('mousemove', function(e) {
+    mouse.prevX = mouse.x;
+    mouse.prevY = mouse.y;
+    mouse.x = e.clientX;
+    mouse.y = e.clientY;
+    
+    // Always add trail particles on move
+    if (mouse.prevX > 0) {
+      var dx = mouse.x - mouse.prevX;
+      var dy = mouse.y - mouse.prevY;
+      var dist = Math.sqrt(dx*dx + dy*dy);
+      var steps = Math.max(1, Math.floor(dist / 8));
+      
+      for (var i = 0; i < steps; i++) {
+        var t = i / steps;
+        var tx = mouse.prevX + dx * t;
+        var ty = mouse.prevY + dy * t;
+        trails.push({
+          x: tx, y: ty,
+          life: 1,
+          decay: 0.015 + Math.random() * 0.025,
+          size: 2 + Math.random() * 4,
+          color: COLORS[Math.floor(Math.random() * COLORS.length)],
+          vx: (Math.random() - 0.5) * 2,
+          vy: (Math.random() - 0.5) * 2
+        });
+      }
+    }
+    
+    // Spawn energy particles
+    if (Math.random() < 0.5) {
+      particles.push({
+        x: mouse.x + (Math.random() - 0.5) * 20,
+        y: mouse.y + (Math.random() - 0.5) * 20,
+        vx: (Math.random() - 0.5) * 3,
+        vy: (Math.random() - 0.5) * 3 - 1,
+        life: 1,
+        decay: 0.01 + Math.random() * 0.03,
+        size: 1.5 + Math.random() * 3,
+        color: Math.random() < 0.3 ? '#ffb800' : (Math.random() < 0.5 ? '#45ff6b' : '#ff4050')
+      });
+    }
+  });
+  
+  // Mouse down = BIG energy burst (Henshin!)
+  document.addEventListener('mousedown', function(e) {
+    mouse.down = true;
+    var count = 30;
+    for (var i = 0; i < count; i++) {
+      var angle = (Math.PI * 2 * i) / count;
+      var speed = 3 + Math.random() * 8;
+      sparks.push({
+        x: e.clientX, y: e.clientY,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        life: 1,
+        decay: 0.02 + Math.random() * 0.04,
+        size: 2 + Math.random() * 5,
+        color: COLORS[Math.floor(Math.random() * COLORS.length)]
+      });
+    }
+    // Add a henshin ring burst
+    for (var j = 0; j < 20; j++) {
+      var a = Math.random() * Math.PI * 2;
+      var s = 4 + Math.random() * 6;
+      sparks.push({
+        x: e.clientX + Math.cos(a) * 30,
+        y: e.clientY + Math.sin(a) * 30,
+        vx: Math.cos(a) * s,
+        vy: Math.sin(a) * s,
+        life: 1,
+        decay: 0.015 + Math.random() * 0.03,
+        size: 3 + Math.random() * 6,
+        color: '#ffb800'
+      });
+    }
+  });
+  
+  document.addEventListener('mouseup', function() { mouse.down = false; });
+  
+  // Rider compound eye glow at cursor
+  function drawCompoundEye(x, y, alpha) {
+    if (alpha <= 0) return;
+    ctx.save();
+    ctx.globalAlpha = alpha * 0.3;
+    // Left eye
+    ctx.fillStyle = '#ff2020';
+    ctx.beginPath();
+    ctx.ellipse(x - 12, y, 14, 8, -0.1, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#ff6040';
+    ctx.beginPath();
+    ctx.ellipse(x - 12, y - 1, 8, 4, -0.1, 0, Math.PI * 2);
+    ctx.fill();
+    // Right eye
+    ctx.fillStyle = '#ff2020';
+    ctx.beginPath();
+    ctx.ellipse(x + 12, y, 14, 8, 0.1, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#ff6040';
+    ctx.beginPath();
+    ctx.ellipse(x + 12, y - 1, 8, 4, 0.1, 0, Math.PI * 2);
+    ctx.fill();
+    // Bright center
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(x - 12, y - 1, 3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(x + 12, y - 1, 3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+  
+  function animate() {
+    ctx.clearRect(0, 0, W, H);
+    
+    // Draw energy trails
+    for (var i = trails.length - 1; i >= 0; i--) {
+      var t = trails[i];
+      t.life -= t.decay;
+      if (t.life <= 0) { trails.splice(i, 1); continue; }
+      t.x += t.vx;
+      t.y += t.vy;
+      ctx.beginPath();
+      ctx.arc(t.x, t.y, t.size * t.life, 0, Math.PI * 2);
+      ctx.fillStyle = t.color;
+      ctx.globalAlpha = t.life * 0.8;
+      ctx.fill();
+      // Glow
+      ctx.beginPath();
+      ctx.arc(t.x, t.y, t.size * t.life * 2.5, 0, Math.PI * 2);
+      ctx.fillStyle = t.color;
+      ctx.globalAlpha = t.life * 0.15;
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    
+    // Draw energy particles
+    for (var j = particles.length - 1; j >= 0; j--) {
+      var p = particles[j];
+      p.life -= p.decay;
+      if (p.life <= 0) { particles.splice(j, 1); continue; }
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vy -= 0.02; // Float up
+      
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
+      ctx.fillStyle = p.color;
+      ctx.globalAlpha = p.life * 0.9;
+      ctx.fill();
+      // Glow
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size * p.life * 3, 0, Math.PI * 2);
+      ctx.fillStyle = p.color;
+      ctx.globalAlpha = p.life * 0.12;
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    
+    // Draw spark burst particles
+    for (var k = sparks.length - 1; k >= 0; k--) {
+      var s = sparks[k];
+      s.life -= s.decay;
+      if (s.life <= 0) { sparks.splice(k, 1); continue; }
+      s.x += s.vx;
+      s.y += s.vy;
+      s.vx *= 0.96;
+      s.vy *= 0.96;
+      
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.size * s.life, 0, Math.PI * 2);
+      ctx.fillStyle = s.color;
+      ctx.globalAlpha = s.life;
+      ctx.fill();
+      // Glow
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.size * s.life * 3, 0, Math.PI * 2);
+      ctx.fillStyle = s.color;
+      ctx.globalAlpha = s.life * 0.2;
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    
+    // Draw compound eye glow at cursor
+    drawCompoundEye(mouse.x, mouse.y, mouse.down ? 0.8 : 0.4);
+    
+    // Draw henshin belt ring when mouse is down
+    if (mouse.down) {
+      ctx.save();
+      ctx.globalAlpha = 0.25;
+      ctx.strokeStyle = '#45ff6b';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(mouse.x, mouse.y, 40, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.strokeStyle = '#ffb800';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(mouse.x, mouse.y, 50, 0.3, Math.PI * 2 + 0.3);
+      ctx.stroke();
+      ctx.strokeStyle = '#ff4050';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(mouse.x, mouse.y, 55, -0.5, Math.PI * 2 - 0.5);
+      ctx.stroke();
+      ctx.restore();
+    }
+    
+    requestAnimationFrame(animate);
+  }
+  
+  animate();
+})();
