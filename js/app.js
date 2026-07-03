@@ -11,6 +11,8 @@ let currentUser = null;
 // --- 初始化 ---
 document.addEventListener('DOMContentLoaded', () => {
   initApp();
+  initBannerParticles();
+  initCardSparkEffects();
 });
 
 function initApp() {
@@ -721,5 +723,49 @@ function bindEvents() {
         document.getElementById('filterBar').scrollIntoView({ behavior: 'smooth' });
       }
     });
+  });
+}
+
+// ============================================
+// 假面骑士视觉效果
+// ============================================
+
+// Banner 能量粒子
+function initBannerParticles() {
+  var container = document.getElementById('heroParticles');
+  if (!container) return;
+  var colors = ['#1fc742', '#45ff6b', '#e82030', '#ffb800', '#ff4050', '#ffdd57'];
+  for (var i = 0; i < 40; i++) {
+    var particle = document.createElement('div');
+    particle.className = 'hero-particle';
+    particle.style.left = Math.random() * 100 + '%';
+    particle.style.animationDelay = Math.random() * 8 + 's';
+    particle.style.animationDuration = (6 + Math.random() * 8) + 's';
+    particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+    particle.style.width = (2 + Math.random() * 4) + 'px';
+    particle.style.height = particle.style.width;
+    container.appendChild(particle);
+  }
+}
+
+// 卡片悬浮能量火花
+function initCardSparkEffects() {
+  document.addEventListener('mouseover', function(e) {
+    var card = e.target.closest('.hero-card');
+    if (!card) return;
+    var rect = card.getBoundingClientRect();
+    var sparks = 5;
+    for (var i = 0; i < sparks; i++) {
+      var spark = document.createElement('div');
+      spark.className = 'energy-spark';
+      spark.style.left = (e.clientX - rect.left) + 'px';
+      spark.style.top = (e.clientY - rect.top) + 'px';
+      spark.style.setProperty('--sx', (Math.random() - 0.5) * 80 + 'px');
+      spark.style.setProperty('--sy', (Math.random() - 0.5) * 80 + 'px');
+      spark.style.background = Math.random() > 0.5 ? '#45ff6b' : '#ffdd57';
+      spark.style.animationDuration = (0.6 + Math.random() * 0.8) + 's';
+      card.appendChild(spark);
+      setTimeout(function() { if (spark.parentNode) spark.parentNode.removeChild(spark); }, 1200);
+    }
   });
 }
